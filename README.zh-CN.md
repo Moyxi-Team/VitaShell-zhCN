@@ -67,13 +67,18 @@ docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
 
 产物：`build/VitaShell.vpk`、`build/eboot.bin`。
 
-**构建避坑**：`vdpm` 安装依赖与 `cmake` 编译必须放在**同一个容器进程内**执行。如果分两次 `docker run --rm`，安装的包会随容器销毁而丢失，编译会退回到镜像自带的旧版 `taihen.h`，报错：
+**构建避坑（重要）**：如果你遇到
 
 ```
-error: too many arguments to function '(SceUID (*)(void))cur->old'
+error: too many arguments to function '(SceUID (*)(void))cur->old'; expected 0, have 3
 ```
 
-原因是旧版 `TAI_CONTINUE` 宏展开成无参形式 `(type(*)(void))`，新版展开成 `(type(*)())`，允许传参。装上新版 taihen 即消除。
+这是两层原因叠加，本仓库都已处理：
+
+1. **编译器标准**：GCC 14 起默认 `-std=gnu23`，C23 规定 `f()` 等价于 `f(void)`；而 taihen 的 `TAI_CONTINUE` 宏用 `(type (*)())`（无参数表）转换函数指针，于是传参被判为"参数过多"。本仓库在 `CMakeLists.txt` 中显式加入 `-std=gnu11` 解决。
+2. **依赖安装位置**：`vdpm` 装包与 `cmake` 编译必须在**同一次 `docker run` 内**完成。分两次 `--rm` 运行会让安装结果随容器销毁而丢失，编译退回镜像自带组件。
+
+另外源码已改用仓库自带的 `tai_compat.h` 中 `TAI_CONTINUE_ARG` 宏，不再依赖头文件里 `TAI_CONTINUE` 的具体写法，新旧 VitaSDK 均可编译。
 
 ### 方式三：本地 VitaSDK
 
