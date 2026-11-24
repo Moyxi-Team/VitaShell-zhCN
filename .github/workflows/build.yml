@@ -20,6 +20,8 @@ jobs:
           docker run --rm vitasdk/vitasdk:latest /bin/bash -c '
             echo "VITASDK=$VITASDK"
             which vdpm || true
+            echo "--- zstd / archive libs ---"
+            ls "$VITASDK/arm-vita-eabi/lib" | grep -iE "zstd|archive|lzma" || true
             echo "--- current TAI_CONTINUE ---"
             grep -n -A6 "define TAI_CONTINUE" "$VITASDK/arm-vita-eabi/include/taihen.h" || true
           '
@@ -33,9 +35,10 @@ jobs:
         run: |
           docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
             set -eux
-            for pkg in xz libarchive quirc taihen; do
+            for pkg in xz libarchive quirc taihen zstd; do
               vdpm "$pkg" || echo "vdpm $pkg reported an error, continuing"
             done
+            ls "$VITASDK/arm-vita-eabi/lib" | grep -iE "zstd|archive|lzma" || true
             echo "--- TAI_CONTINUE definition now in effect ---"
             grep -n -A6 "define TAI_CONTINUE" "$VITASDK/arm-vita-eabi/include/taihen.h" || true
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Release

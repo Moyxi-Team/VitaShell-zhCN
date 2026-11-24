@@ -175,6 +175,7 @@ target_link_libraries(VitaShell
   archive
   bz2
   lzma
+  zstd
   crypto
   expat
   taihen_stub
