@@ -279,22 +279,22 @@ int coredumpViewer(const char *file) {
     float y = START_Y;
     
     // Exception
-    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "Exception");
+    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "异常类型");
     pgf_draw_text(COREDUMP_INFO_X, y, TEXT_COLOR, getCauseName(cause));
     y += FONT_Y_SPACE;
     
     // Thread ID
-    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "Thread ID");
+    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "线程 ID");
     pgf_draw_textf(COREDUMP_INFO_X, y, TEXT_COLOR, "0x%08X", thid);
     y += FONT_Y_SPACE;
     
     // Thread name
-    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "Thread name");
+    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "线程名");
     pgf_draw_text(COREDUMP_INFO_X, y, TEXT_COLOR, thname);
     y += FONT_Y_SPACE;
     
     // EPC
-    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "EPC");
+    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "异常位置（EPC）");
     if (rel_epc != -1)
       pgf_draw_textf(COREDUMP_INFO_X, y, TEXT_COLOR, "%s + 0x%08X", modname, rel_epc);
     else
@@ -302,12 +302,12 @@ int coredumpViewer(const char *file) {
     y += FONT_Y_SPACE;
     
     // Cause
-    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "Cause");
+    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "原因码");
     pgf_draw_textf(COREDUMP_INFO_X, y, TEXT_COLOR, "0x%08X", cause);
     y += FONT_Y_SPACE;
 
     // BadVAddr
-    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "BadVAddr");
+    pgf_draw_text(SHELL_MARGIN_X, y, TEXT_COLOR, "错误地址（BadVAddr）");
     pgf_draw_textf(COREDUMP_INFO_X, y, TEXT_COLOR, "0x%08X", bad_v_addr);
     y += FONT_Y_SPACE;
 
