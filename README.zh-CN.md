@@ -1,5 +1,7 @@
 # VitaShell 2.16 简体中文汉化版
 
+[![Build VitaShell VPK](https://github.com/Moyxi-Team/VitaShell-zhCN/actions/workflows/build.yml/badge.svg)](https://github.com/Moyxi-Team/VitaShell-zhCN/actions/workflows/build.yml)
+
 > [English README](README.md)
 
 本项目是基于 **theheroGAC 的非官方 VitaShell 2.16**（官方 2.02 已停止更新）整理的**简体中文完整汉化版**，并提供 GitHub Actions 自动构建，直接产出可安装的 `VitaShell.vpk`。
@@ -59,7 +61,7 @@ VitaShell 官方与常见分发包的简体中文翻译只覆盖部分界面，�
 ```bash
 docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
   set -e
-  for pkg in xz libarchive quirc taihen; do vdpm "$pkg"; done
+  for pkg in xz libarchive quirc taihen zstd; do vdpm "$pkg"; done
   cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
   cmake --build build -j"$(nproc)"
 '
@@ -77,8 +79,9 @@ error: too many arguments to function '(SceUID (*)(void))cur->old'; expected 0, 
 
 1. **编译器标准**：GCC 14 起默认 `-std=gnu23`，C23 规定 `f()` 等价于 `f(void)`；而 taihen 的 `TAI_CONTINUE` 宏用 `(type (*)())`（无参数表）转换函数指针，于是传参被判为"参数过多"。本仓库在 `CMakeLists.txt` 中显式加入 `-std=gnu11` 解决。
 2. **依赖安装位置**：`vdpm` 装包与 `cmake` 编译必须在**同一次 `docker run` 内**完成。分两次 `--rm` 运行会让安装结果随容器销毁而丢失，编译退回镜像自带组件。
+3. **libarchive 依赖 zstd**：升级后的 `libarchive` 内含 zstd 解压滤镜，需要 `-lzstd`（`libzstd.a` 由 `vdpm zstd` 提供）。而该库是多线程构建，还要补 `-lpthread`，否则报 `undefined reference to 'ZSTD_*'` 及 `sched_yield` / `pthread_*`。本仓库已在 `CMakeLists.txt` 的链接列表中加入 `zstd` 与 `pthread`。
 
-另外源码已改用仓库自带的 `tai_compat.h` 中 `TAI_CONTINUE_ARG` 宏，不再依赖头文件里 `TAI_CONTINUE` 的具体写法，新旧 VitaSDK 均可编译。
+另外源码已改用仓库自带的 `tai_compat.h` 中 `TAI_CONTINUE_ARG` 宏，不再依赖头文件里 `TAI_CONTINUE` 的具体写法，新旧 VitaSDK 均可编译。该宏用 `__builtin_memcpy` 在整数与指针之间搬运 hook 引用（`tai_hook_ref_t` 是 `uintptr_t`），避免 GCC 14 把整型转指针判为错误的 `-Wint-conversion`。
 
 ### 方式三：本地 VitaSDK
 
