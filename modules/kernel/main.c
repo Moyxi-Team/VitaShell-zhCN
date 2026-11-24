@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include <taihen.h>
+#include "../../tai_compat.h"
 
 #include "vitashell_kernel.h"
 
@@ -272,7 +273,7 @@ SceUID ksceSysconSetOtgPowerLevelPatched(uint32_t *pwr_val) {
     SceUID res, state;
     ENTER_SYSCALL(state);
     
-    res = TAI_CONTINUE(SceUID, ksceSysconSetOtgPowerLevelHookRef, pwr_val);
+    res = TAI_CONTINUE_ARG(SceUID, ksceSysconSetOtgPowerLevelHookRef, pwr_val);
     
     if(pwr_val != NULL && *pwr_val == 0x700) {
         *pwr_val = 0x200;        

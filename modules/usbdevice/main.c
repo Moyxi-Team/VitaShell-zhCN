@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include <taihen.h>
+#include "../../tai_compat.h"
 
 static tai_hook_ref_t ksceIoOpenRef;
 static tai_hook_ref_t ksceIoReadRef;
@@ -35,16 +36,16 @@ static int first = 1;
 static SceUID ksceIoOpenPatched(const char *file, int flags, SceMode mode) {
   first = 1;
 
-  SceUID fd = TAI_CONTINUE(SceUID, ksceIoOpenRef, file, flags, mode);
+  SceUID fd = TAI_CONTINUE_ARG(SceUID, ksceIoOpenRef, file, flags, mode);
 
   if (fd == 0x800F090D)
-    return TAI_CONTINUE(SceUID, ksceIoOpenRef, file, flags & ~SCE_O_WRONLY, mode);
+    return TAI_CONTINUE_ARG(SceUID, ksceIoOpenRef, file, flags & ~SCE_O_WRONLY, mode);
 
   return fd;
 }
 
 static int ksceIoReadPatched(SceUID fd, void *data, SceSize size) {
-  int res = TAI_CONTINUE(int, ksceIoReadRef, fd, data, size);
+  int res = TAI_CONTINUE_ARG(int, ksceIoReadRef, fd, data, size);
 
   if (first) {
     first = 0;
