@@ -16,7 +16,7 @@
 
 | 类别 | 文件 | 说明 |
 | --- | --- | --- |
-| 语言表补全 | `l10n/chinese_s.txt`、`resources/chinese_s.txt` | 共 **234 条**语言键，全部为简体中文，无空项、无英文残留；专有名词采用「中文 + 原文」形式（如 `QR 码 (QR Code)`） |
+| 语言表补全 | `l10n/chinese_s.txt`、`resources/chinese_s.txt` | 以官方 763 键中文表为基线精修 234 条（替换 138 条译文、新增 44 条键），合并后共 **807 键**，全部为简体中文，无空项、无英文残留；专有名词采用「中文 + 原文」形式（如 `QR 码 (QR Code)`）。保留全部旧键是为了避免任何界面回落到英文 |
 | 补齐缺失键 | `language.h` | 新增上游原本没有的键：`FREE_SPACE`、`PROCESSING`、`BATTERY_INFO_MSG`、`LOW_BATTERY_WARNING_MSG`、`AUDIO_REPEAT_ON`、`AUDIO_REPEAT_OFF` |
 | 去硬编码 | `main.c`、`io_process.c`、`settings.c`、`coredump.c` | 把写死在代码里的英文（剩余空间、处理中、电池信息、低电量警告、音频循环、QR 扫描提示、崩溃转储界面字段）改为走语言表 |
 
@@ -40,26 +40,29 @@
 汉化**不是**靠 VPK 里附带一个语言文件，而是：
 
 - 语言表 `resources/chinese_s.txt` 在编译期被编进 `eboot.bin`，作为内部默认资源（源码 `init.c` 的 `default_files` 表）。
-- 每次启动时 `installDefaultFiles()` 遍历这张表：**目标文件不存在 → 从 eboot 解出写入**；**目标文件已存在且 replace=0 → 不覆盖**。
+- 每次启动时 `installDefaultFiles()` 遍历这张表：**目标文件不存在 → 从 eboot 解出写入**；**replace=1 且文件大小与内嵌资源不一致 → 强制覆盖为内嵌版本**。
+- 本版把 `chinese_s.txt` 一行的 `replace` 从 `0` 改成了 `1`，且内嵌表升级为**完整表（807 键）**：以上游官方 763 键中文表为基线（保留全部键，避免回落英文），替换其中 138 条译文、追加 44 条新增键。
 
 由此得出实际行为：
 
 | 你的机器状态 | 装完 VPK 后 |
 | --- | --- |
-| 之前从未装过 VitaShell，或已删除 `ux0:/VitaShell/language/chinese_s.txt` | 启动即自动生成**最新内嵌中文语言表**，切到 Chinese (Simp) 就是完整汉化 |
-| 之前装过原版 / 旧版汉化，`ux0:/VitaShell/language/chinese_s.txt` 已存在 | 该文件**不会被覆盖**，界面仍是旧译文；需手动删除该文件后重启（或直接用仓库里的 `l10n/chinese_s.txt` 覆盖） |
+| 之前从未装过 VitaShell，或已删除 `ux0:/VitaShell/language/chinese_s.txt` | 启动即自动生成**最新内嵌完整中文语言表**，切到 Chinese (Simp) 就是完整汉化 |
+| 之前装过原版 / 旧版汉化，`ux0:/VitaShell/language/chinese_s.txt` 已存在 | 旧表大小（约 59584 字节）与内嵌完整表（57045 字节）不同，**启动时自动覆盖**为完整汉化，无需手动删除或替换 |
 
 代码层的汉化（去硬编码部分）随 `eboot.bin` 生效，不需要额外文件。
 
+> ⚠️ 唯一代价：因为采用强制同步，如果你手动修改过 `ux0:/VitaShell/language/chinese_s.txt` 且文件大小发生变化，下次启动会被还原成内嵌汉化表。想保留个人改动，请另存为其他文件名使用，或改回 `replace=0` 自行构建。
+
 ## 五、常见问题：别人只安装 VPK 能体验到完整汉化吗
 
-**分两种情况：**
+**能，无论对方之前是否装过 VitaShell。**
 
-- **可以**：对方设备上不存在 `ux0:/VitaShell/language/chinese_s.txt`（全新设备，或先手动删掉该文件）。此时只装 VPK、启动一次、再把语言切到 Chinese (Simp)，就是完整汉化 —— 因为最新语言表已内嵌在 eboot 里。
-- **不可以**：对方之前装过 VitaShell，语言目录里已有旧的 `chinese_s.txt`（原版安装时就会生成）。按 replace=0 的规则不会覆盖，界面仍是旧译文。
-  - 解决办法：装完 VPK 后删除 `ux0:/VitaShell/language/chinese_s.txt`，重启 VitaShell；或把本仓库的 `l10n/chinese_s.txt` 复制过去（UTF-8，不要带 BOM）。
+- 设备上不存在 `ux0:/VitaShell/language/chinese_s.txt` → 启动时从 eboot 解出内嵌完整表，直接是完整汉化。
+- 设备上已有旧版 `chinese_s.txt`（原版安装时生成，763 键）→ 启动时因大小不一致被自动覆盖为内嵌的 807 键完整表，同样是完整汉化。
 
-所以对外分享时，**推荐随包附带 `chinese_s.txt` 并注明「装完后覆盖 ux0:/VitaShell/language/chinese_s.txt」**，这样对方无论什么初始状态都能得到完整汉化，不会出现「装了新版但文案没变」的困惑。
+所以对外分享时，**只发这一个 VPK 就够了**，不需要再附带 `chinese_s.txt`，也不需要教对方删文件。装完启动一次、把语言切到 Chinese (Simp) 即可。
+
 
 ## 六、自行构建
 

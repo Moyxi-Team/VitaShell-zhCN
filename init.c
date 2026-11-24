@@ -105,7 +105,10 @@ extern unsigned char _binary_modules_usbdevice_usbdevice_skprx_size;
 #define DEFAULT_FILE(path, name, replace) { path, (void *)&_binary_resources_##name##_start, (int)&_binary_resources_##name##_size, replace }
 
 static DefaultFile default_files[] = {
-  DEFAULT_FILE("ux0:VitaShell/language/chinese_s.txt", chinese_s_txt, 0),
+  // 简体中文表强制同步：已装过 VitaShell 的设备若存在旧版 chinese_s.txt，
+  // 因大小与本内嵌完整表（807 键）不一致，启动时会自动覆盖为汉化版，
+  // 无需用户手动删除或替换 ux0:/VitaShell/language/chinese_s.txt。
+  DEFAULT_FILE("ux0:VitaShell/language/chinese_s.txt", chinese_s_txt, 1),
   DEFAULT_FILE("ux0:VitaShell/language/chinese_t.txt", chinese_t_txt, 0),
   DEFAULT_FILE("ux0:VitaShell/language/dutch.txt", dutch_txt, 0),
   DEFAULT_FILE("ux0:VitaShell/language/english_us.txt", english_us_txt, 0),
