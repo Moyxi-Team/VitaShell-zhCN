@@ -215,6 +215,7 @@ target_link_libraries(VitaShell
   curl
   ssl
   crypto
+  pthread
 )
 
 # Vita artifacts
