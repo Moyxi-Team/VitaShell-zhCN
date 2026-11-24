@@ -113,7 +113,8 @@ static int update_thread(SceSize args_size, UpdateArguments *args) {
         } else if (kbs > 0.1) {
           snprintf(msg, sizeof(msg), "%.0f KB/s", kbs);
         } else {
-          strcpy(msg, "Processing...");
+          snprintf(msg, sizeof(msg), "%s", language_container[PROCESSING] ?
+                   language_container[PROCESSING] : "Processing...");
         }
         
         sceMsgDialogProgressBarSetInfo(SCE_MSG_DIALOG_PROGRESSBAR_TARGET_BAR_DEFAULT, (SceChar8 *)msg);

@@ -198,8 +198,9 @@ void drawShellInfo(const char *path) {
       
       char total_string[16];
       getSizeString(total_string, max_size);
-      snprintf(storage_string, sizeof(storage_string), "%s: %s/%s free", 
-               current_device, free_string, total_string);
+      snprintf(storage_string, sizeof(storage_string), "%s: %s/%s %s",
+               current_device, free_string, total_string,
+               language_container[FREE_SPACE] ? language_container[FREE_SPACE] : "free");
       
       // Get color based on free space percentage
       uint32_t storage_color = getFreeSpaceColor(free_size, max_size);

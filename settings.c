@@ -179,8 +179,14 @@ static void showBatteryInfo() {
   charging = scePowerIsBatteryCharging();
 
   char message[256];
-  snprintf(message, sizeof(message), "Battery Information:\nExists: %s\nLevel: %d%%\nCharging: %s",
-           exists ? "Yes" : "No", percent, charging ? "Yes" : "No");
+  // Localized: fall back to English if the language entry is missing
+  const char *battery_fmt = language_container[BATTERY_INFO_MSG] ?
+    language_container[BATTERY_INFO_MSG] : "Battery Information:\nExists: %s\nLevel: %d%%\nCharging: %s";
+  const char *yes_text = language_container[YES] ? language_container[YES] : "Yes";
+  const char *no_text = language_container[NO] ? language_container[NO] : "No";
+
+  snprintf(message, sizeof(message), battery_fmt,
+           exists ? yes_text : no_text, percent, charging ? yes_text : no_text);
 
   initMessageDialog(SCE_MSG_DIALOG_BUTTON_TYPE_OK, message);
   setDialogStep(DIALOG_STEP_INFO);  // Set step to handle dialog properly
@@ -222,7 +228,10 @@ void checkLowBatteryWarning() {
 
   if (!charging && percent >= 0 && percent <= 20 && !battery_warning_shown) {
     battery_warning_shown = 1;
-    initMessageDialog(SCE_MSG_DIALOG_BUTTON_TYPE_OK, "Low Battery Warning:\nBattery level is below 20%.\nPlease connect charger.");
+    const char *low_battery_msg = language_container[LOW_BATTERY_WARNING_MSG] ?
+      language_container[LOW_BATTERY_WARNING_MSG] :
+      "Low Battery Warning:\nBattery level is below 20%.\nPlease connect charger.";
+    initMessageDialog(SCE_MSG_DIALOG_BUTTON_TYPE_OK, low_battery_msg);
   } else if (charging || percent > 20) {
     battery_warning_shown = 0;
   }
@@ -330,9 +339,12 @@ void initSettingsMenu() {
   // Set only first 12 options, rest unused for now
 
   // Audio repeat options
-  repeat_options[0] = "None";
-  repeat_options[1] = "Repeat One";
-  repeat_options[2] = "Repeat All";
+  repeat_options[0] = language_container[AUDIO_REPEAT_NONE] ?
+    language_container[AUDIO_REPEAT_NONE] : "None";
+  repeat_options[1] = language_container[AUDIO_REPEAT_ONE] ?
+    language_container[AUDIO_REPEAT_ONE] : "Repeat One";
+  repeat_options[2] = language_container[AUDIO_REPEAT_ALL] ?
+    language_container[AUDIO_REPEAT_ALL] : "Repeat All";
   repeat_options[3] = language_container[VITASHELL_SETTINGS_AUDIO_REPEAT_SHUFFLE] ?
     language_container[VITASHELL_SETTINGS_AUDIO_REPEAT_SHUFFLE] : "Shuffle";
 

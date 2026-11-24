@@ -1,0 +1,61 @@
+name: Build VitaShell VPK
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake make pkg-config bzip2
+
+      - name: Install VitaSDK
+        run: |
+          curl -L --retry 3 -o /tmp/vitasdk.tar.bz2 \
+            https://github.com/vitasdk/vitasdk/releases/latest/download/vitasdk-linux-x86_64.tar.bz2
+          mkdir -p /tmp/vsdk-extract
+          tar xjf /tmp/vitasdk.tar.bz2 -C /tmp/vsdk-extract
+          top=$(ls -d /tmp/vsdk-extract/*/ | head -n 1)
+          echo "extracted top dir: $top"
+          sudo mkdir -p /usr/local/vitasdk
+          sudo cp -a "$top". /usr/local/vitasdk/
+          echo "VITASDK=/usr/local/vitasdk" >> "$GITHUB_ENV"
+          echo "/usr/local/vitasdk/bin" >> "$GITHUB_PATH"
+
+      - name: Show toolchain info
+        run: |
+          echo "VITASDK=$VITASDK"
+          ls "$VITASDK/bin" | head -n 20
+          ls "$VITASDK/arm-vita-eabi/lib" | head -n 40
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)" --verbose
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p dist
+          cp build/eboot.bin dist/ || true
+          cp build/VitaShell.vpk dist/ || true
+          ls -l dist
+
+      - name: Upload VPK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VitaShell-zhCN-vpk
+          path: |
+            dist/VitaShell.vpk
+            dist/eboot.bin
+          if-no-files-found: warn

@@ -202,3 +202,12 @@ ARCHIVE_NAME                         = "壓縮檔名稱"
 COMPRESSION_LEVEL                    = "壓縮等級 (0-9)"
 ENTER_PASSWORD                       = "輸入密碼"
 LANGUAGE_CHANGED_RESTART_MSG = "語言已更改。重新啟動 VitaShell 以應用。"
+
+# v2.16 full localization additions
+FREE_SPACE                            = "可用"
+PROCESSING                            = "正在處理..."
+BATTERY_INFO_MSG                      = "電池資訊：\是否存在：%s\電量：%d%%\充電中：%s"
+LOW_BATTERY_WARNING_MSG               = "低電量警告：\電量低於 20%。\請連接充電器。"
+AUDIO_REPEAT_NONE                     = "不重複"
+AUDIO_REPEAT_ONE                      = "單曲循環"
+AUDIO_REPEAT_ALL                      = "列表循環"
