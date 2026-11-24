@@ -3,8 +3,6 @@ name: Build VitaShell VPK
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -14,41 +12,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install build tools
+      - name: Pull VitaSDK image
+        run: docker pull vitasdk/vitasdk:latest
+
+      - name: Inspect toolchain
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq cmake make pkg-config bzip2
+          docker run --rm vitasdk/vitasdk:latest /bin/bash -c '
+            echo "VITASDK=$VITASDK"
+            ls "$VITASDK" | head
+            echo "--- libs ---"
+            ls "$VITASDK/arm-vita-eabi/lib" | grep -E "vita2d|ftpvita|quirc|onigmo|archive|curl|ssl|expat" || true
+            echo "--- vdpm ---"
+            which vdpm && vdpm 2>&1 | head -n 20 || true
+          '
 
-      - name: Install VitaSDK
+      - name: Install extra libraries
         run: |
-          curl -L --retry 3 -o /tmp/vitasdk.tar.bz2 \
-            https://github.com/vitasdk/vitasdk/releases/latest/download/vitasdk-linux-x86_64.tar.bz2
-          mkdir -p /tmp/vsdk-extract
-          tar xjf /tmp/vitasdk.tar.bz2 -C /tmp/vsdk-extract
-          top=$(ls -d /tmp/vsdk-extract/*/ | head -n 1)
-          echo "extracted top dir: $top"
-          sudo mkdir -p /usr/local/vitasdk
-          sudo cp -a "$top". /usr/local/vitasdk/
-          echo "VITASDK=/usr/local/vitasdk" >> "$GITHUB_ENV"
-          echo "/usr/local/vitasdk/bin" >> "$GITHUB_PATH"
+          docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
+            set -x
+            for pkg in xz libarchive quirc; do
+              vdpm "$pkg" || echo "FAILED: $pkg"
+            done
+            ls "$VITASDK/arm-vita-eabi/lib" | grep -E "quirc|archive|lzma" || true
+          '
 
-      - name: Show toolchain info
+      - name: Configure and build
         run: |
-          echo "VITASDK=$VITASDK"
-          ls "$VITASDK/bin" | head -n 20
-          ls "$VITASDK/arm-vita-eabi/lib" | head -n 40
-
-      - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: cmake --build build -j"$(nproc)" --verbose
+          docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
+            set -e
+            cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+            cmake --build build -j"$(nproc)"
+          '
 
       - name: Collect artifacts
         run: |
           mkdir -p dist
-          cp build/eboot.bin dist/ || true
-          cp build/VitaShell.vpk dist/ || true
+          cp build/eboot.bin dist/ 2>/dev/null || true
+          cp build/VitaShell.vpk dist/ 2>/dev/null || true
           ls -l dist
 
       - name: Upload VPK
