@@ -220,8 +220,8 @@ USB_WAIT_ATTACH                      = "请连接USB闪存驱动器以继续.\�
 QR_SCANNING                          = "正在扫描二维码（QR）..."
 QR_OPEN_WEBSITE                      = "你是否要打开这个 链接:\%s"
 QR_SHOW_CONTENTS                     = "二维码（QR）信息:\%s"
-QR_CONFIRM_INSTALL                   = "你是否要安装这个软件包:\%s\n文件: %s\n大小: %s"
-QR_CONFIRM_DOWNLOAD                  = "你是否要下载这个文件:\%s\n文件: %s\n大小: %s"
+QR_CONFIRM_INSTALL                   = "你是否要安装这个软件包:\%s\文件：%s\大小：%s"
+QR_CONFIRM_DOWNLOAD                  = "你是否要下载这个文件:\%s\文件：%s\大小：%s"
 
 # Adhoc strings
 ADHOC_RECEIVE_SEARCHING_PSVITA       = "正在搜索可接收的...\请稍候."
