@@ -1,5 +1,7 @@
 # VitaShell (Unofficial Version 2.16)
 
+> **简体中文说明请见 [README.zh-CN.md](README.zh-CN.md)** ｜ This repo is a full Simplified Chinese localization of VitaShell 2.16, maintained by Moyxi-Team.
+
 **⚠️ IMPORTANT: This is an unofficial version of VitaShell modified by theheroGAC**
 
 VitaShell is an alternative replacement of the PS Vita's LiveArea. It offers you a file manager, package installer, built-in FTP and much more.

@@ -19,27 +19,25 @@ jobs:
         run: |
           docker run --rm vitasdk/vitasdk:latest /bin/bash -c '
             echo "VITASDK=$VITASDK"
-            ls "$VITASDK" | head
-            echo "--- libs ---"
-            ls "$VITASDK/arm-vita-eabi/lib" | grep -E "vita2d|ftpvita|quirc|onigmo|archive|curl|ssl|expat" || true
-            echo "--- vdpm ---"
-            which vdpm && vdpm 2>&1 | head -n 20 || true
+            which vdpm || true
+            echo "--- current TAI_CONTINUE ---"
+            grep -n -A6 "define TAI_CONTINUE" "$VITASDK/arm-vita-eabi/include/taihen.h" || true
           '
 
-      - name: Install extra libraries
+      # IMPORTANT: vdpm install and the actual build MUST run inside the SAME container.
+      # The previous version installed packages in a `docker run --rm` container, so every
+      # package (including taihen) was thrown away when that container exited. The build then
+      # used the image's old taihen.h whose TAI_CONTINUE expands to `(type(*)(void))`, which
+      # makes GCC reject the arguments: "too many arguments to function '(SceUID (*)(void))cur->old'".
+      - name: Install libraries and build
         run: |
           docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
-            set -x
+            set -eux
             for pkg in xz libarchive quirc taihen; do
-              vdpm "$pkg" || echo "FAILED: $pkg"
+              vdpm "$pkg" || echo "vdpm $pkg reported an error, continuing"
             done
-            ls "$VITASDK/arm-vita-eabi/lib" | grep -E "quirc|archive|lzma" || true
-          '
-
-      - name: Configure and build
-        run: |
-          docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
-            set -e
+            echo "--- TAI_CONTINUE definition now in effect ---"
+            grep -n -A6 "define TAI_CONTINUE" "$VITASDK/arm-vita-eabi/include/taihen.h" || true
             cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
             cmake --build build -j"$(nproc)"
           '
@@ -47,8 +45,8 @@ jobs:
       - name: Collect artifacts
         run: |
           mkdir -p dist
-          cp build/eboot.bin dist/ 2>/dev/null || true
           cp build/VitaShell.vpk dist/ 2>/dev/null || true
+          cp build/eboot.bin dist/ 2>/dev/null || true
           ls -l dist
 
       - name: Upload VPK
