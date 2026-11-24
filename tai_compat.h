@@ -1,26 +1,20 @@
-#ifndef TAI_COMPAT_H
+﻿#ifndef TAI_COMPAT_H
 #define TAI_COMPAT_H
 
 #include <taihen.h>
 
 /*
- * 不依赖 taihen 头文件里 TAI_CONTINUE 的具体写法，自行展开 hook 链。
- *
- * 背景：
- *   - 各版本 taihen.h 里 TAI_CONTINUE 的指针转换写法不同，有的写成 (type (*)(void))，
- *     在 GCC 14 默认的 -std=gnu23 下会报 "too many arguments to function"。
- *   - tai_hook_ref_t 是 uintptr_t（整数），直接强转成结构体指针会触发
- *     -Wint-conversion（GCC 14 起在 C 语言中视为错误）。
- *   因此这里用 __builtin_memcpy 在整数与指针之间搬字节，避免整型/指针转换告警。
- *
- * 用法与 TAI_CONTINUE 一致：TAI_CONTINUE_ARG(返回类型, hook_ref, 参数...)
+ * 涓嶄緷璧?taihen 澶存枃浠堕噷 TAI_CONTINUE 鐨勫叿浣撳啓娉曪紝鑷灞曞紑 hook 閾俱€? *
+ * 鑳屾櫙锛? *   - 鍚勭増鏈?taihen.h 閲?TAI_CONTINUE 鐨勬寚閽堣浆鎹㈠啓娉曚笉鍚岋紝鏈夌殑鍐欐垚 (type (*)(void))锛? *     鍦?GCC 14 榛樿鐨?-std=gnu23 涓嬩細鎶?"too many arguments to function"銆? *   - tai_hook_ref_t 鏄?uintptr_t锛堟暣鏁帮級锛岀洿鎺ュ己杞垚缁撴瀯浣撴寚閽堜細瑙﹀彂
+ *     -Wint-conversion锛圙CC 14 璧峰湪 C 璇█涓涓洪敊璇級銆? *   鍥犳杩欓噷鐢?__builtin_memcpy 鍦ㄦ暣鏁颁笌鎸囬拡涔嬮棿鎼瓧鑺傦紝閬垮厤鏁村瀷/鎸囬拡杞崲鍛婅銆? *
+ * 鐢ㄦ硶涓?TAI_CONTINUE 涓€鑷达細TAI_CONTINUE_ARG(杩斿洖绫诲瀷, hook_ref, 鍙傛暟...)
  */
 #define TAI_CONTINUE_ARG(type, hook, ...)                          \
   ({                                                               \
     tai_hook_ref_t ref_ = (hook);                                   \
     struct _tai_hook_user *cur_ = 0, *next_ = 0;                    \
     __builtin_memcpy(&cur_, &ref_, sizeof(cur_));                   \
-    next_ = cur_->next;                                             \
+    __builtin_memcpy(&next_, &cur_->next, sizeof(next_));            \
     (next_ == 0) ? ((type (*)())cur_->old)(__VA_ARGS__)             \
                  : ((type (*)())next_->func)(__VA_ARGS__);          \
   })
