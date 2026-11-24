@@ -30,7 +30,7 @@ jobs:
         run: |
           docker run --rm -v "$PWD":/build -w /build vitasdk/vitasdk:latest /bin/bash -c '
             set -x
-            for pkg in xz libarchive quirc; do
+            for pkg in xz libarchive quirc taihen; do
               vdpm "$pkg" || echo "FAILED: $pkg"
             done
             ls "$VITASDK/arm-vita-eabi/lib" | grep -E "quirc|archive|lzma" || true
