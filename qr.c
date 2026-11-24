@@ -620,7 +620,7 @@ void drawQRQualityIndicator(int x, int y, QRQuality quality) {
   }
 
   // Draw quality text
-  const char* quality_texts[] = { "POOR", "FAIR", "GOOD", "EXCELLENT" };
+  const char* quality_texts[] = { "差", "一般", "良好", "极佳" };
   pgf_draw_text(x, y + bar_height + 8, text_color, quality_texts[quality]);
 }
 

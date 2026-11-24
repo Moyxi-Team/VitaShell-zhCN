@@ -121,19 +121,19 @@ static char *regnames[] = { "a1", "a2", "a3", "a4",
 static char *getCauseName(int cause) {
   switch (cause) {
     case 0x30002:
-      return "Undefined instruction exception";
+      return "未定义指令异常（Undefined instruction）";
       
     case 0x30003:
-      return "Prefetch abort exception";
+      return "取指中止异常（Prefetch abort）";
     
     case 0x30004:
-      return "Data abort exception";
+      return "数据中止异常（Data abort）";
       
     case 0x60080:
-      return "Division by zero";
+      return "除零错误（Division by zero）";
   }
   
-  return "Unknown cause";
+  return "未知原因（Unknown cause）";
 }
 
 static int decompressGzip(uint8_t *dst, int size_dst, uint8_t *src, int size_src) {
